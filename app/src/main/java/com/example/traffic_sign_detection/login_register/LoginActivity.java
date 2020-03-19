@@ -12,6 +12,12 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class LoginActivity extends AppCompatActivity {
 
     private TextInputLayout loginEmailInputLayout;
@@ -52,7 +58,40 @@ public class LoginActivity extends AppCompatActivity {
         loginMaterialButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(streamAndDataIntent);
+
+                String userEmail = loginEmailInputEditText.getText().toString();
+                String userPassword = loginPasswordInputEditText.getText().toString();
+
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl("http://192.168.1.126:8080")
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+
+                UserModel userModel = new UserModel(userEmail, userPassword);
+
+                LoginAndRegisterRetrofitInterface service = retrofit.create(LoginAndRegisterRetrofitInterface.class);
+
+                Call<UserModel> login = service.authenticateUser(userModel);
+
+
+
+                login.enqueue(new Callback<UserModel>() {
+                    @Override
+                    public void onResponse(Call<UserModel> call, Response<UserModel> response) {
+                        System.out.println("VO TEP VA" + response.body().getUserEmail());
+
+
+                        if(!(response.body()==null))
+                        {
+                            startActivity(streamAndDataIntent);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<UserModel> call, Throwable t) {
+
+                    }
+                });
             }
         });
     }

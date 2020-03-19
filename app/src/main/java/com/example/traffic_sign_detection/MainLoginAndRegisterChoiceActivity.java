@@ -10,6 +10,8 @@ import com.example.traffic_sign_detection.login_register.LoginActivity;
 import com.example.traffic_sign_detection.login_register.RegisterActivity;
 import com.google.android.material.button.MaterialButton;
 
+import java.util.Objects;
+
 public class MainLoginAndRegisterChoiceActivity extends AppCompatActivity {
 
     private MaterialButton loginButton;
