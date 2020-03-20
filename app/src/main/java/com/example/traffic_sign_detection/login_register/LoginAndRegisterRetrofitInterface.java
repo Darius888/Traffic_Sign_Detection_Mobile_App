@@ -7,9 +7,9 @@ import retrofit2.http.POST;
 public interface LoginAndRegisterRetrofitInterface {
 
     @POST("/register")
-    Call<UserModel> registerUser(@Body UserModel userModel);
+    Call<UserRegisterResponse> registerUser(@Body UserRegisterResponse userRegisterResponse);
 
     @POST("/authenticate")
-    Call<UserModel> authenticateUser(@Body UserModel userModel);
+    Call<UserModelLogin> authenticateUser(@Body UserModelLogin userModelLogin);
 
 }

@@ -13,11 +13,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserModel {
+public class UserModelRegister {
 
     @SerializedName("userEmail")
     private String userEmail;
     @SerializedName("userPassword")
     private String userPassword;
+    @SerializedName("response")
+    private String response;
 
 }

@@ -4,6 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Patterns;
 import android.view.View;
 
 import com.example.traffic_sign_detection.R;
@@ -12,6 +16,9 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.json.JSONObject;
+
+import lombok.SneakyThrows;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -29,6 +36,7 @@ public class LoginActivity extends AppCompatActivity {
     private MaterialButton loginMaterialButton;
 
     private Intent streamAndDataIntent;
+    private Boolean checkYoSelf = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +44,63 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         initViews();
-        login();
+        if(!(getIntent().getExtras() == null))
+        {
+            String value = getIntent().getExtras().getString("email");
+            loginEmailInputEditText.setText(value);
+            login();
+
+        } else {
+            loginEmailInputEditText.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (!(isValidEmail(s))) {
+                        loginEmailInputEditText.setError("Incorrect email");
+                        loginEmailInputLayout.setErrorContentDescription("Email is invalid");
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if (!(isValidEmail(s))) {
+                        checkYoSelf = false;
+                    }
+                }
+            });
+
+            loginPasswordInputEditText.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (loginPasswordInputEditText.getText().toString().isEmpty()) {
+                        loginPasswordInputLayout.setPasswordVisibilityToggleEnabled(false);
+                        loginPasswordInputEditText.setError("Cannot be empty");
+                        loginPasswordInputLayout.setErrorContentDescription("Cannot be empty");
+                    } else {
+                        loginPasswordInputLayout.setPasswordVisibilityToggleEnabled(true);
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if ((loginPasswordInputEditText.getText().toString().isEmpty())) {
+                        checkYoSelf = false;
+                    }
+                }
+            });
+
+
+            login();
+        }
 
     }
 
@@ -59,40 +123,75 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+
                 String userEmail = loginEmailInputEditText.getText().toString();
                 String userPassword = loginPasswordInputEditText.getText().toString();
 
-                Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl("http://192.168.1.126:8080")
-                        .addConverterFactory(GsonConverterFactory.create())
-                        .build();
+                if (checkInputFields()) {
+                    Retrofit retrofit = new Retrofit.Builder()
+                            .baseUrl("http://192.168.1.126:8080")
+                            .addConverterFactory(GsonConverterFactory.create())
+                            .build();
 
-                UserModel userModel = new UserModel(userEmail, userPassword);
+                    UserModelLogin userModelLogin = new UserModelLogin(userEmail, userPassword, "");
 
-                LoginAndRegisterRetrofitInterface service = retrofit.create(LoginAndRegisterRetrofitInterface.class);
+                    LoginAndRegisterRetrofitInterface service = retrofit.create(LoginAndRegisterRetrofitInterface.class);
 
-                Call<UserModel> login = service.authenticateUser(userModel);
-
-
-
-                login.enqueue(new Callback<UserModel>() {
-                    @Override
-                    public void onResponse(Call<UserModel> call, Response<UserModel> response) {
-                        System.out.println("VO TEP VA" + response.body().getUserEmail());
+                    Call<UserModelLogin> login = service.authenticateUser(userModelLogin);
 
 
-                        if(!(response.body()==null))
-                        {
-                            startActivity(streamAndDataIntent);
+                    login.enqueue(new Callback<UserModelLogin>() {
+                        @SneakyThrows
+                        @Override
+                        public void onResponse(Call<UserModelLogin> call, Response<UserModelLogin> response) {
+
+//                        JSONObject tokenJson = new JSONObject(response.body().getToken());
+                            System.out.println("VO TEP VA" + response.body().getToken());
+
+                            if (!(response.body() == null)) {
+                                startActivity(streamAndDataIntent);
+                            }
                         }
-                    }
 
-                    @Override
-                    public void onFailure(Call<UserModel> call, Throwable t) {
+                        @Override
+                        public void onFailure(Call<UserModelLogin> call, Throwable t) {
 
-                    }
-                });
+                        }
+                    });
+                }
             }
         });
+    }
+
+    public Boolean checkInputFields()
+    {
+        Boolean validInput = true;
+
+
+        if((loginEmailInputEditText.getText().toString().isEmpty())||(loginPasswordInputEditText.getText().toString().isEmpty()))
+        {
+            if((loginEmailInputEditText.getText().toString().isEmpty()))
+            {
+                loginEmailInputEditText.setError("Cannot be empty");
+                loginEmailInputLayout.setErrorContentDescription("Cannot be empty");
+                validInput = false;
+            } if ((loginPasswordInputEditText.getText().toString().isEmpty()))
+            {
+                loginPasswordInputLayout.setPasswordVisibilityToggleEnabled(false);
+                loginPasswordInputEditText.setError("Cannot be empty");
+                loginPasswordInputLayout.setErrorContentDescription("Cannot be empty");
+                validInput = false;
+            } if ((isValidEmail(loginEmailInputEditText.getText().toString())))
+            {
+                loginEmailInputEditText.setError("Incorrect email");
+                loginEmailInputLayout.setErrorContentDescription("Email is invalid");
+                validInput = false;
+            }
+        }
+        return validInput;
+    }
+
+    public static boolean isValidEmail(CharSequence target) {
+        return (!TextUtils.isEmpty(target) && Patterns.EMAIL_ADDRESS.matcher(target).matches());
     }
 }
