@@ -24,7 +24,6 @@ public class StreamAndDataActivity extends AppCompatActivity {
 
     }
 
-
     private void initViews()
     {
         tabLayout = findViewById(R.id.tabLayout);

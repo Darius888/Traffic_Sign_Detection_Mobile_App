@@ -3,29 +3,46 @@
     xmlns:stream="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:fresco="http://schemas.android.com/tools">
+    android:orientation="vertical"
+    android:background="@color/cardview_dark_background">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+<LinearLayout
+    android:orientation="vertical"
+    android:gravity="center_vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="200dp"
+        android:layout_height="30dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="Live Stream"
+        android:textColor="@color/cardview_light_background"
+        android:textSize="24dp"/>
 
         <com.longdo.mjpegviewer.MjpegView
             android:id="@+id/mjpegview"
             android:layout_width="match_parent"
-            android:layout_height="250dp" />
-
-<!--    <com.github.niqdev.mjpeg.MjpegSurfaceView-->
-<!--        android:id="@+id/stream_view"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="400dp"-->
-<!--        stream:type="stream_default" />-->
-
-        <ImageView
-            android:id="@+id/lastdetectionimage"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:layout_height="350dp"
+            android:layout_gravity="center"
             />
 
-    </LinearLayout>
+    <TextView
+        android:layout_width="200dp"
+        android:layout_height="30dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="Last Detection"
+        android:textColor="@color/cardview_light_background"
+        android:textSize="24dp"/>
+
+    <ImageView
+        android:id="@+id/lastDetection"
+        android:layout_gravity="center"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:contentDescription="lastDetection"
+        />
+</LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

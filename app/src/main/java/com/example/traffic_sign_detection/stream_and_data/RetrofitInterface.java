@@ -7,10 +7,11 @@ import org.json.JSONArray;
 
 import java.util.List;
 
+import io.reactivex.Observable;
 import retrofit2.Call;
 import retrofit2.http.GET;
 
 public interface RetrofitInterface {
-    @GET("/findall")
-    Call<List<PredictionModel>> getAllPredictionModels();
+    @GET("/predictions")
+    Observable<List<PredictionModel>> getAllPredictionModels();
 }

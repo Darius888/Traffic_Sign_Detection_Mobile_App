@@ -4,13 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 
 import com.example.traffic_sign_detection.login_register.LoginActivity;
 import com.example.traffic_sign_detection.login_register.RegisterActivity;
 import com.google.android.material.button.MaterialButton;
-
-import java.util.Objects;
 
 public class MainLoginAndRegisterChoiceActivity extends AppCompatActivity {
 
@@ -43,22 +40,12 @@ public class MainLoginAndRegisterChoiceActivity extends AppCompatActivity {
 
     private void login()
     {
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(loginIntent);
-            }
-        });
+        loginButton.setOnClickListener(v -> startActivity(loginIntent));
     }
 
 
     private void register()
     {
-        registerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(registerIntent);
-            }
-        });
+        registerButton.setOnClickListener(v -> startActivity(registerIntent));
     }
 }

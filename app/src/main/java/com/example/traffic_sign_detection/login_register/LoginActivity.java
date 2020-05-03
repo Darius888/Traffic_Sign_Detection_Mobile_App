@@ -129,7 +129,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 if (checkInputFields()) {
                     Retrofit retrofit = new Retrofit.Builder()
-                            .baseUrl("http://192.168.1.126:8080")
+                            .baseUrl("http://78.56.203.39:8070")
                             .addConverterFactory(GsonConverterFactory.create())
                             .build();
 

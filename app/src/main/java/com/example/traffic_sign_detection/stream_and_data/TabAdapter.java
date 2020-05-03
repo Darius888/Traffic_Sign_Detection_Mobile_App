@@ -15,14 +15,17 @@ public class TabAdapter extends FragmentStatePagerAdapter {
     }@Override
     public Fragment getItem(int position) {
         return mFragmentList.get(position);
-    }public void addFragment(Fragment fragment, String title) {
+    }
+    public void addFragment(Fragment fragment, String title) {
         mFragmentList.add(fragment);
         mFragmentTitleList.add(title);
-    }@Nullable
+    }
+    @Nullable
     @Override
     public CharSequence getPageTitle(int position) {
         return mFragmentTitleList.get(position);
-    }@Override
+    }
+    @Override
     public int getCount() {
         return mFragmentList.size();
     }
