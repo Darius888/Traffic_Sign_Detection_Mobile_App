@@ -119,46 +119,50 @@ public class LoginActivity extends AppCompatActivity {
 
     public void login()
     {
-        loginMaterialButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        loginMaterialButton.setOnClickListener(v -> {
 
 
-                String userEmail = loginEmailInputEditText.getText().toString();
-                String userPassword = loginPasswordInputEditText.getText().toString();
+            String userEmail = loginEmailInputEditText.getText().toString();
+            String userPassword = loginPasswordInputEditText.getText().toString();
 
-                if (checkInputFields()) {
-                    Retrofit retrofit = new Retrofit.Builder()
-                            .baseUrl("http://78.56.203.39:8070")
-                            .addConverterFactory(GsonConverterFactory.create())
-                            .build();
+            if (checkInputFields()) {
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl("http://78.56.203.39:8070")
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
 
-                    UserModelLogin userModelLogin = new UserModelLogin(userEmail, userPassword, "");
+                UserModelLogin userModelLogin = new UserModelLogin(userEmail, userPassword, "");
 
-                    LoginAndRegisterRetrofitInterface service = retrofit.create(LoginAndRegisterRetrofitInterface.class);
+                LoginAndRegisterRetrofitInterface service = retrofit.create(LoginAndRegisterRetrofitInterface.class);
 
-                    Call<UserModelLogin> login = service.authenticateUser(userModelLogin);
+                Call<UserModelLogin> login = service.authenticateUser(userModelLogin);
 
 
-                    login.enqueue(new Callback<UserModelLogin>() {
-                        @SneakyThrows
-                        @Override
-                        public void onResponse(Call<UserModelLogin> call, Response<UserModelLogin> response) {
+                login.enqueue(new Callback<UserModelLogin>() {
+                    @SneakyThrows
+                    @Override
+                    public void onResponse(Call<UserModelLogin> call, Response<UserModelLogin> response) {
 
-//                        JSONObject tokenJson = new JSONObject(response.body().getToken());
-                            System.out.println("VO TEP VA" + response.body().getToken());
-
-                            if (!(response.body() == null)) {
-                                startActivity(streamAndDataIntent);
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<UserModelLogin> call, Throwable t) {
+                        if(response.body()==null)
+                        {
+                            loginEmailInputEditText.setError("User does not exist");
+                            loginEmailInputLayout.setErrorContentDescription("User does not exist");
+                            loginPasswordInputEditText.setError("User does not exist");
+                            loginPasswordInputLayout.setErrorContentDescription("User does not exist");
+                            loginPasswordInputLayout.setPasswordVisibilityToggleEnabled(false);
 
                         }
-                    });
-                }
+
+                        if (!(response.body() == null)) {
+                            startActivity(streamAndDataIntent);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<UserModelLogin> call, Throwable t) {
+
+                    }
+                });
             }
         });
     }

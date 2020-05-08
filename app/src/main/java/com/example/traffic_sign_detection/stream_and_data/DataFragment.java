@@ -66,13 +66,13 @@ public class DataFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         root = inflater.inflate(R.layout.fragment_data, container, false);
 
-        disposable = Observable.interval(0, 10, TimeUnit.SECONDS)
+        disposable = Observable.interval(1, 10, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::getMaxUrlNumber, this::onError);
+                .subscribe(this::getData, this::onError);
 
         MaterialButton materialButton = root.findViewById(R.id.refreshChart);
         materialButton.setOnClickListener(v ->
-                getMaxUrlNumber(null));
+                getData(null));
 
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -83,12 +83,10 @@ public class DataFragment extends Fragment {
 
         service = retrofit.create(RetrofitInterface.class);
 
-
-
         return root;
     }
 
-    private void getMaxUrlNumber(Long along){
+    private void getData(Long along){
 
         Observable<List<PredictionModel>> observable = service.getAllPredictionModels();
         observable.subscribeOn(Schedulers.io()).
@@ -99,18 +97,13 @@ public class DataFragment extends Fragment {
 
     }
 
-
     private void onError(Throwable throwable) {
         Toast.makeText(root.getContext(), "OnError in Observable Timer",
                 Toast.LENGTH_LONG).show();
     }
 
-
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void handleResults(List<PredictionModel> url) {
-
-
-
 
         if (url != null) {
             for (int i = 0; i < url.size(); i++) {
@@ -242,15 +235,15 @@ public class DataFragment extends Fragment {
             {
 
                 BarDataSet dataSet = new BarDataSet(wut,"Test");
-                dataSet.setValueTextSize(10);
+                dataSet.setValueTextSize(5);
                 dataSet.setDrawValues(false);
                 dataSet.notifyDataSetChanged();
                 dataSet.setValueFormatter(new PercentFormatter());
 
                 dataSet.setColors(colors);
                 BarData data = new BarData(dataSet);
+                barChart.clear();
                 barChart.setData(data);
-//            dataSet.setColors(ColorTemplate.COLORFUL_COLORS);
                 barChart.setDescription(null);
                 barChart.setFitBars(true);
                 barChart.fitScreen();
@@ -260,12 +253,7 @@ public class DataFragment extends Fragment {
                 barChart.invalidate();
 
 
-
-
-
-
                 System.out.println("PO ADDITION :" + xAxisLabel);
-
 
                 YAxis yAxisRight = barChart.getAxisRight();
                 yAxisRight.setEnabled(false);
@@ -275,43 +263,33 @@ public class DataFragment extends Fragment {
                 yAxisLeft.setAxisMaximum(0.0f);
                 yAxisLeft.setAxisMaximum(1.0f);
 
-
-
                 XAxis xAxis = barChart.getXAxis();
                 xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
                 xAxis.setCenterAxisLabels(false);
                 xAxis.setTextColor(Color.WHITE);
                 xAxis.setValueFormatter(new IndexAxisValueFormatter(xAxisLabel));
-//            xAxis.setLabelCount(xAxisLabel.size());
+                xAxis.setLabelCount(xAxisLabel.size());
                 System.out.println("KIEK CIA TU LABELIU:" + xAxis.getLabelCount());
             } else
             {
                 System.out.println("KKKKKKKKKK");
             }
 
-
             BarDataSet dataSet = new BarDataSet(wut,"Test");
-            dataSet.setValueTextSize(10);
+            dataSet.setValueTextSize(5);
             dataSet.setDrawValues(false);
             dataSet.setValueFormatter(new PercentFormatter());
 
             dataSet.setColors(colors);
             BarData data = new BarData(dataSet);
             barChart.setData(data);
-//            dataSet.setColors(ColorTemplate.COLORFUL_COLORS);
             barChart.setDescription(null);
             barChart.setFitBars(true);
             barChart.fitScreen();
             barChart.getLegend().setEnabled(false);
             barChart.invalidate();
 
-
-
-
-
-
             System.out.println("PO ADDITION :" + xAxisLabel);
-
 
             YAxis yAxisRight = barChart.getAxisRight();
             yAxisRight.setEnabled(false);
@@ -320,15 +298,14 @@ public class DataFragment extends Fragment {
             yAxisLeft.setTextColor(Color.WHITE);
             yAxisLeft.setAxisMaximum(0.0f);
             yAxisLeft.setAxisMaximum(1.0f);
-
-
+            yAxisLeft.setStartAtZero(true);
 
             XAxis xAxis = barChart.getXAxis();
             xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
             xAxis.setCenterAxisLabels(false);
             xAxis.setTextColor(Color.WHITE);
             xAxis.setValueFormatter(new IndexAxisValueFormatter(xAxisLabel));
-//            xAxis.setLabelCount(xAxisLabel.size());
+            xAxis.setLabelCount(xAxisLabel.size());
             System.out.println("KIEK CIA TU LABELIU:" + xAxis.getLabelCount());
 
         }
@@ -351,13 +328,7 @@ public class DataFragment extends Fragment {
         return (sum / x.size());
     }
 
-//    private void clearBarChart()
-//    {
-////        barChart.getData().clearValues();
-////        barChart.notifyDataSetChanged();
-//        barChart.clear();
-////        barChart.invalidate();
-//    }
+
 
 
 

@@ -7,6 +7,6 @@ import retrofit2.Call;
 import retrofit2.http.GET;
 
 public interface RetrofitStreamService {
-    @GET("/predictions/last/image")
-    Observable<Integer> getLastPredictionImageURL();
+    @GET("/predictions/last")
+    Observable<PredictionModel> getLastPredictionData();
 }

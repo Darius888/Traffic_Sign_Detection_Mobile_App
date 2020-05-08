@@ -7,16 +7,24 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_logo"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".stream_and_data.StreamAndDataActivity"></activity>
-        <activity android:name=".login_register.RegisterActivity" />
-        <activity android:name=".login_register.LoginActivity" />
-        <activity android:name=".MainLoginAndRegisterChoiceActivity">
+        <activity android:name=".stream_and_data.StreamAndDataActivity"
+            android:screenOrientation="portrait"
+            ></activity>
+        <activity android:name=".login_register.RegisterActivity"
+            android:screenOrientation="portrait"
+            />
+        <activity android:name=".login_register.LoginActivity"
+            android:screenOrientation="portrait"
+            />
+        <activity android:name=".MainLoginAndRegisterChoiceActivity"
+            android:screenOrientation="portrait"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

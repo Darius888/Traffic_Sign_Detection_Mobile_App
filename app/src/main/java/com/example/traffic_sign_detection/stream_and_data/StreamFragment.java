@@ -1,24 +1,30 @@
 package com.example.traffic_sign_detection.stream_and_data;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.URLUtil;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.example.traffic_sign_detection.R;
 import com.longdo.mjpegviewer.MjpegView;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +40,13 @@ public class StreamFragment extends Fragment {
     private MjpegView mjpegView;
     private ImageView imageView;
     private View root;
+    private TextView lastPredictionClassName;
+    private TextView lastPredictionProbability;
+    private TextView lastPredictionTimestamp;
     Disposable disposable;
+
+
+
 
 
     ArrayList<Integer> a= new ArrayList<>();
@@ -46,7 +58,6 @@ public class StreamFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         initViews(inflater, container);
 
-
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://78.56.203.39:8070")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -55,14 +66,10 @@ public class StreamFragment extends Fragment {
 
         service = retrofit.create(RetrofitStreamService.class);
 
-
-
-
-
-
-        disposable = Observable.interval(1000, 1000, TimeUnit.MILLISECONDS)
+        disposable = Observable.interval(0, 1000, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::getMaxUrlNumber, this::onError);
+                .subscribe(this::getLastPredictionData, this::onError);
+
 
         if (checkURL("http://78.56.203.39:8090")) {
             loadStream("http://78.56.203.39:8090");
@@ -77,15 +84,18 @@ public class StreamFragment extends Fragment {
         root = inflater.inflate(R.layout.fragment_stream, container, false);
         mjpegView = root.findViewById(R.id.mjpegview);
         imageView = root.findViewById(R.id.lastDetection);
+        lastPredictionClassName = root.findViewById(R.id.lastPredClassName);
+        lastPredictionProbability = root.findViewById(R.id.lastPredProb);
+        lastPredictionTimestamp = root.findViewById(R.id.lastPredTimestamp);
     }
 
-    public void getMaxUrlNumber(Long aLong){
-        Observable<Integer> observable = service.getLastPredictionImageURL();
+    @SuppressLint("CheckResult")
+    public void getLastPredictionData(Long aLong){
+        Observable<PredictionModel> observable = service.getLastPredictionData();
         observable.subscribeOn(Schedulers.newThread()).
                 observeOn(AndroidSchedulers.mainThread())
                 .map(result -> result)
                 .subscribe(this::handleResults, this::handleError);
-
     }
 
     private void onError(Throwable throwable) {
@@ -93,19 +103,22 @@ public class StreamFragment extends Fragment {
                 Toast.LENGTH_LONG).show();
     }
 
-
-    private void handleResults(Integer url) {
-
+    private void handleResults(PredictionModel url) {
 
         if (url != null) {
 
             RequestOptions options = new RequestOptions()
                     .centerCrop()
-                    .placeholder(R.mipmap.ic_launcher_round)
                     .error(R.mipmap.ic_launcher_round);
 
-            Glide.with(root.getContext()).load("http://78.56.203.39:8070/" + url + ".jpg").apply(options).into(imageView);
-            System.out.println("VAS IS DAS" + url);
+            Glide.with(root.getContext()).load("http://78.56.203.39:8070/predictions/last/image").apply(options).dontAnimate().diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true).into(imageView);
+
+            lastPredictionClassName.setText(url.getPredictionClassName());
+            lastPredictionProbability.setText(url.getPredictionProbability() + " %");
+            lastPredictionTimestamp.setText(url.getTimestamp().substring(0,19).replace("T", " "));
+
+            System.out.println("VAS IS DAS" + url.getPredictionClassName());
 
 
         } else {
@@ -115,7 +128,6 @@ public class StreamFragment extends Fragment {
     }
 
     private void handleError(Throwable t) {
-
         //Add your error here.
     }
 
