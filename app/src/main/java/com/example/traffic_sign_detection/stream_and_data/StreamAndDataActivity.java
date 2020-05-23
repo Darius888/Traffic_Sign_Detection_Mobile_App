@@ -32,7 +32,11 @@ public class StreamAndDataActivity extends AppCompatActivity {
         tabAdapter = new TabAdapter(getSupportFragmentManager());
         tabAdapter.addFragment(new StreamFragment(), "Stream");
         tabAdapter.addFragment(new DataFragment(), "Data");
+        tabAdapter.addFragment(new MapFragment(), "Map");
+
         viewPager.setAdapter(tabAdapter);
         tabLayout.setupWithViewPager(viewPager);
+
+        viewPager.setOffscreenPageLimit(3);
     }
 }

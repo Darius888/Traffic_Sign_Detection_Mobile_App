@@ -1,6 +1,7 @@
 package com.example.traffic_sign_detection.stream_and_data;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -43,13 +45,11 @@ public class StreamFragment extends Fragment {
     private TextView lastPredictionClassName;
     private TextView lastPredictionProbability;
     private TextView lastPredictionTimestamp;
+
+    String temp1;
+    String temp2;
+
     Disposable disposable;
-
-
-
-
-
-    ArrayList<Integer> a= new ArrayList<>();
 
     RetrofitStreamService service;
 
@@ -57,6 +57,9 @@ public class StreamFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         initViews(inflater, container);
+
+
+        setRetainInstance(true);
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://78.56.203.39:8070")
@@ -118,7 +121,13 @@ public class StreamFragment extends Fragment {
             lastPredictionProbability.setText(url.getPredictionProbability() + " %");
             lastPredictionTimestamp.setText(url.getTimestamp().substring(0,19).replace("T", " "));
 
-            System.out.println("VAS IS DAS" + url.getPredictionClassName());
+            temp1 = "";
+            temp2 = url.getPredictionClassName();
+
+            temp1 = temp2;
+
+
+
 
 
         } else {

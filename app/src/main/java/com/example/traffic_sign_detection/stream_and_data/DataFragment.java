@@ -1,18 +1,25 @@
 package com.example.traffic_sign_detection.stream_and_data;
 
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.traffic_sign_detection.R;
 import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -52,6 +59,12 @@ public class DataFragment extends Fragment {
 
     private View root;
 
+    private TextView colorz;
+    private TextView predictionName;
+    private TextView avgPredictionProbability;
+
+    private TableLayout tableLayout;
+
     private Disposable disposable;
     private Disposable disposable2;
     private RetrofitInterface service;
@@ -65,6 +78,9 @@ public class DataFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         root = inflater.inflate(R.layout.fragment_data, container, false);
+        setRetainInstance(true);
+
+        initViews(root);
 
         disposable = Observable.interval(1, 10, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -97,6 +113,14 @@ public class DataFragment extends Fragment {
 
     }
 
+    private void initViews(View root)
+    {
+
+        tableLayout = root.findViewById(R.id.tableLayout);
+        barChart = root.findViewById(R.id.barchart);
+
+    }
+
     private void onError(Throwable throwable) {
         Toast.makeText(root.getContext(), "OnError in Observable Timer",
                 Toast.LENGTH_LONG).show();
@@ -104,6 +128,9 @@ public class DataFragment extends Fragment {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void handleResults(List<PredictionModel> url) {
+        tableLayout.removeAllViews();
+        barChart.invalidate();
+        barChart.clear();
 
         if (url != null) {
             for (int i = 0; i < url.size(); i++) {
@@ -199,9 +226,6 @@ public class DataFragment extends Fragment {
                     .distinct()
                     .collect(Collectors.toList());
 
-            barChart = root.findViewById(R.id.barchart);
-
-
 
             ArrayList<BarEntry> wut = new ArrayList<>();
 
@@ -231,51 +255,8 @@ public class DataFragment extends Fragment {
                 counter++;
             }
 
-            if(barChart.getData() != null)
-            {
 
-                BarDataSet dataSet = new BarDataSet(wut,"Test");
-                dataSet.setValueTextSize(5);
-                dataSet.setDrawValues(false);
-                dataSet.notifyDataSetChanged();
-                dataSet.setValueFormatter(new PercentFormatter());
-
-                dataSet.setColors(colors);
-                BarData data = new BarData(dataSet);
-                barChart.clear();
-                barChart.setData(data);
-                barChart.setDescription(null);
-                barChart.setFitBars(true);
-                barChart.fitScreen();
-                barChart.getLegend().setEnabled(false);
-                barChart.notifyDataSetChanged();
-                barChart.clear();
-                barChart.invalidate();
-
-
-                System.out.println("PO ADDITION :" + xAxisLabel);
-
-                YAxis yAxisRight = barChart.getAxisRight();
-                yAxisRight.setEnabled(false);
-
-                YAxis yAxisLeft = barChart.getAxisLeft();
-                yAxisLeft.setTextColor(Color.WHITE);
-                yAxisLeft.setAxisMaximum(0.0f);
-                yAxisLeft.setAxisMaximum(1.0f);
-
-                XAxis xAxis = barChart.getXAxis();
-                xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-                xAxis.setCenterAxisLabels(false);
-                xAxis.setTextColor(Color.WHITE);
-                xAxis.setValueFormatter(new IndexAxisValueFormatter(xAxisLabel));
-                xAxis.setLabelCount(xAxisLabel.size());
-                System.out.println("KIEK CIA TU LABELIU:" + xAxis.getLabelCount());
-            } else
-            {
-                System.out.println("KKKKKKKKKK");
-            }
-
-            BarDataSet dataSet = new BarDataSet(wut,"Test");
+            BarDataSet dataSet = new BarDataSet(wut,xAxisLabel.get(0));
             dataSet.setValueTextSize(5);
             dataSet.setDrawValues(false);
             dataSet.setValueFormatter(new PercentFormatter());
@@ -287,6 +268,7 @@ public class DataFragment extends Fragment {
             barChart.setFitBars(true);
             barChart.fitScreen();
             barChart.getLegend().setEnabled(false);
+
             barChart.invalidate();
 
             System.out.println("PO ADDITION :" + xAxisLabel);
@@ -301,12 +283,41 @@ public class DataFragment extends Fragment {
             yAxisLeft.setStartAtZero(true);
 
             XAxis xAxis = barChart.getXAxis();
-            xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-            xAxis.setCenterAxisLabels(false);
-            xAxis.setTextColor(Color.WHITE);
-            xAxis.setValueFormatter(new IndexAxisValueFormatter(xAxisLabel));
-            xAxis.setLabelCount(xAxisLabel.size());
-            System.out.println("KIEK CIA TU LABELIU:" + xAxis.getLabelCount());
+            xAxis.setEnabled(false);
+
+            for(int i =0; i < colors.length; i++)
+            {
+
+                TableRow row = new TableRow(root.getContext());
+                TableRow.LayoutParams lp = new TableRow.LayoutParams(
+                        TableRow.LayoutParams.WRAP_CONTENT,
+                        TableRow.LayoutParams.WRAP_CONTENT,
+                        1
+                );
+
+                row.setLayoutParams(lp);
+                row.setBackground(ContextCompat.getDrawable(root.getContext(), R.drawable.table_border));
+                row.setBackgroundColor(colors[i]);
+
+                TextView predictionName = new TextView(root.getContext());
+                predictionName.setText(xAxisLabel.get(i));
+                predictionName.setTextColor(Color.BLACK);
+                predictionName.setGravity(Gravity.CENTER);
+                predictionName.setLayoutParams(lp);
+
+                TextView probability = new TextView(root.getContext());
+                probability.setText(String.valueOf(averageProbabilities.get(i)));
+                probability.setTextColor(Color.BLACK);
+                probability.setGravity(Gravity.CENTER);
+                probability.setLayoutParams(lp);
+
+
+                row.addView(predictionName);
+                row.addView(probability);
+
+                tableLayout.addView(row,i);
+            }
+
 
         }
         else{

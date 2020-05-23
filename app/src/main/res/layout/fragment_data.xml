@@ -8,24 +8,34 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center_vertical">
+        android:orientation="vertical">
 
         <com.github.mikephil.charting.charts.BarChart
             android:id="@+id/barchart"
             android:layout_width="match_parent"
             android:layout_height="360dp"
-            android:layout_gravity="center"/>
+            />
+
+
+        <TableLayout
+            android:id="@+id/tableLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp">
+
+        </TableLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/refreshChart"
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="120dp"
             android:layout_height="60dp"
-            android:text="Refresh Bar Chart"
-            android:textColor="@android:color/black"
+            android:layout_gravity="center"
             android:backgroundTint="@color/cardview_light_background"
-            android:layout_gravity="center"/>
-        
+            android:text="Refresh"
+            android:textColor="@android:color/black" />
+
+
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
