@@ -1,7 +1,6 @@
 package com.example.traffic_sign_detection.stream_and_data;
 
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -19,13 +18,11 @@ import androidx.fragment.app.Fragment;
 
 import com.example.traffic_sign_detection.R;
 import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.material.button.MaterialButton;
@@ -39,7 +36,6 @@ import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -73,8 +69,6 @@ public class DataFragment extends Fragment {
     private BarChart barChart;
 
 
-
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         root = inflater.inflate(R.layout.fragment_data, container, false);
@@ -102,7 +96,7 @@ public class DataFragment extends Fragment {
         return root;
     }
 
-    private void getData(Long along){
+    private void getData(Long along) {
 
         Observable<List<PredictionModel>> observable = service.getAllPredictionModels();
         observable.subscribeOn(Schedulers.io()).
@@ -113,8 +107,7 @@ public class DataFragment extends Fragment {
 
     }
 
-    private void initViews(View root)
-    {
+    private void initViews(View root) {
 
         tableLayout = root.findViewById(R.id.tableLayout);
         barChart = root.findViewById(R.id.barchart);
@@ -184,40 +177,31 @@ public class DataFragment extends Fragment {
 
             ArrayList<Float> averageProbabilities = new ArrayList<>();
 
-            if(!Float.isNaN(busStopAverageProbability))
-            {
+            if (!Float.isNaN(busStopAverageProbability)) {
                 averageProbabilities.add(busStopAverageProbability);
             }
-            if(!Float.isNaN(cannotParkAverageProbability))
-            {
+            if (!Float.isNaN(cannotParkAverageProbability)) {
                 averageProbabilities.add(cannotParkAverageProbability);
             }
-            if(!Float.isNaN(cannotStopAverageProbability))
-            {
+            if (!Float.isNaN(cannotStopAverageProbability)) {
                 averageProbabilities.add(cannotStopAverageProbability);
             }
-            if(!Float.isNaN(crosswalkAverageProbability))
-            {
+            if (!Float.isNaN(crosswalkAverageProbability)) {
                 averageProbabilities.add(crosswalkAverageProbability);
             }
-            if(!Float.isNaN(mainRoadAverageProbability))
-            {
+            if (!Float.isNaN(mainRoadAverageProbability)) {
                 averageProbabilities.add(mainRoadAverageProbability);
             }
-            if(!Float.isNaN(parkingSpotAverageProbability))
-            {
+            if (!Float.isNaN(parkingSpotAverageProbability)) {
                 averageProbabilities.add(parkingSpotAverageProbability);
             }
-            if(!Float.isNaN(roadWorkAverageProbability))
-            {
+            if (!Float.isNaN(roadWorkAverageProbability)) {
                 averageProbabilities.add(roadWorkAverageProbability);
             }
-            if(!Float.isNaN(stopSignsAverageProbability))
-            {
+            if (!Float.isNaN(stopSignsAverageProbability)) {
                 averageProbabilities.add(stopSignsAverageProbability);
             }
-            if(!Float.isNaN(speed70AverageProbability))
-            {
+            if (!Float.isNaN(speed70AverageProbability)) {
                 averageProbabilities.add(speed70AverageProbability);
             }
             System.out.println("VAAAAAAAAAA :" + cannotParkAverageProbability);
@@ -229,8 +213,7 @@ public class DataFragment extends Fragment {
 
             ArrayList<BarEntry> wut = new ArrayList<>();
 
-            for(int i=0; i < averageProbabilities.size(); i++)
-            {
+            for (int i = 0; i < averageProbabilities.size(); i++) {
                 wut.add(new BarEntry(i, averageProbabilities.get(i)));
 
             }
@@ -256,7 +239,7 @@ public class DataFragment extends Fragment {
             }
 
 
-            BarDataSet dataSet = new BarDataSet(wut,xAxisLabel.get(0));
+            BarDataSet dataSet = new BarDataSet(wut, xAxisLabel.get(0));
             dataSet.setValueTextSize(5);
             dataSet.setDrawValues(false);
             dataSet.setValueFormatter(new PercentFormatter());
@@ -285,8 +268,7 @@ public class DataFragment extends Fragment {
             XAxis xAxis = barChart.getXAxis();
             xAxis.setEnabled(false);
 
-            for(int i =0; i < colors.length; i++)
-            {
+            for (int i = 0; i < colors.length; i++) {
 
                 TableRow row = new TableRow(root.getContext());
                 TableRow.LayoutParams lp = new TableRow.LayoutParams(
@@ -315,12 +297,11 @@ public class DataFragment extends Fragment {
                 row.addView(predictionName);
                 row.addView(probability);
 
-                tableLayout.addView(row,i);
+                tableLayout.addView(row, i);
             }
 
 
-        }
-        else{
+        } else {
             Toast.makeText(root.getContext(), "NO RESULTS FOUND",
                     Toast.LENGTH_LONG).show();
         }
@@ -332,16 +313,11 @@ public class DataFragment extends Fragment {
     }
 
 
-
     private float average(ArrayList<Float> x) {
         float sum = 0;
         for (float aX : x) sum += aX;
         return (sum / x.size());
     }
-
-
-
-
 
 
 }

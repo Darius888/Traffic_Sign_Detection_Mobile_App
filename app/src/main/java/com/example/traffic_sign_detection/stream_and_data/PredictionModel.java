@@ -6,7 +6,6 @@ import com.google.gson.annotations.SerializedName;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
@@ -47,21 +46,17 @@ public class PredictionModel {
     public String height;
 
 
-    public PredictionModel()
-    {
+    public PredictionModel() {
 
     }
 
-    public PredictionModel(String predictionClassName, String predictionProbability)
-    {
+    public PredictionModel(String predictionClassName, String predictionProbability) {
 
     }
 
-    public PredictionModel(long id, String predictionProbability, String predictionClassName)
-    {
+    public PredictionModel(long id, String predictionProbability, String predictionClassName) {
 
     }
-
 
 
 }

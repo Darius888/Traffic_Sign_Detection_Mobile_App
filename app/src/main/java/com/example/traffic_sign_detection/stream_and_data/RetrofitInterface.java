@@ -1,10 +1,6 @@
 package com.example.traffic_sign_detection.stream_and_data;
 
 
-import com.google.gson.JsonArray;
-
-import org.json.JSONArray;
-
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -19,6 +15,7 @@ public interface RetrofitInterface {
 
     @POST("/predictions/gps")
     Call<PredictionLocationModel> postPredictionLocation(@Body PredictionLocationModel predictionLocationModel);
+
 
 
 }

@@ -1,5 +1,4 @@
 package com.example.traffic_sign_detection.login_register;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,6 +7,8 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Patterns;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.traffic_sign_detection.R;
 import com.example.traffic_sign_detection.stream_and_data.StreamAndDataActivity;
 import com.google.android.material.button.MaterialButton;
@@ -15,8 +16,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import lombok.SneakyThrows;
-import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -39,7 +38,9 @@ public class RegisterActivity extends AppCompatActivity {
     private Intent streamAndDataIntent;
     private Intent loginIntent;
 
-    ;
+    public static boolean isValidEmail(CharSequence target) {
+        return (!TextUtils.isEmpty(target) && Patterns.EMAIL_ADDRESS.matcher(target).matches());
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,8 +57,7 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if(!(isValidEmail(s)))
-                {
+                if (!(isValidEmail(s))) {
                     registerEmailInputEditText.setError("Incorrect email");
                     registerEmailInputLayout.setErrorContentDescription("Email is invalid");
                 }
@@ -77,13 +77,11 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if(registerNewPasswordInputEditText.getText().toString().isEmpty())
-                {
+                if (registerNewPasswordInputEditText.getText().toString().isEmpty()) {
                     registerNewPasswordInputLayout.setPasswordVisibilityToggleEnabled(false);
                     registerNewPasswordInputEditText.setError("Cannot be empty");
                     registerNewPasswordInputLayout.setErrorContentDescription("Cannot be empty");
-                } else
-                {
+                } else {
                     registerNewPasswordInputLayout.setPasswordVisibilityToggleEnabled(true);
                 }
             }
@@ -102,13 +100,11 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if(registerRepeatNewPasswordInputEditText.getText().toString().isEmpty())
-                {
+                if (registerRepeatNewPasswordInputEditText.getText().toString().isEmpty()) {
                     registerRepeatNewPasswordInputLayout.setPasswordVisibilityToggleEnabled(false);
                     registerRepeatNewPasswordInputEditText.setError("Cannot be empty");
                     registerRepeatNewPasswordInputLayout.setErrorContentDescription("Cannot be empty");
-                } else
-                {
+                } else {
                     registerRepeatNewPasswordInputLayout.setPasswordVisibilityToggleEnabled(true);
                 }
             }
@@ -123,8 +119,7 @@ public class RegisterActivity extends AppCompatActivity {
         register();
     }
 
-    public void initViews()
-    {
+    public void initViews() {
         registerEmailInputLayout = findViewById(R.id.register_email_layout);
         registerNewPasswordInputLayout = findViewById(R.id.register_new_password_layout);
         registerRepeatNewPasswordInputLayout = findViewById(R.id.register_repeat_new_password_layout);
@@ -140,8 +135,7 @@ public class RegisterActivity extends AppCompatActivity {
         loginIntent = new Intent(this, LoginActivity.class);
     }
 
-    public void register()
-    {
+    public void register() {
         registerMaterialButton.setOnClickListener(v -> {
 
             String userEmail = registerEmailInputEditText.getText().toString();
@@ -149,8 +143,7 @@ public class RegisterActivity extends AppCompatActivity {
             String userRepeatNewPassword = registerRepeatNewPasswordInputEditText.getText().toString();
 
 
-            if(checkInputFields()) {
-
+            if (checkInputFields()) {
 
 
                 Retrofit retrofit = new Retrofit.Builder()
@@ -158,7 +151,7 @@ public class RegisterActivity extends AppCompatActivity {
                         .addConverterFactory(GsonConverterFactory.create())
                         .build();
 
-                UserRegisterResponse userModel = new UserRegisterResponse(userEmail, userRepeatNewPassword,"");
+                UserRegisterResponse userModel = new UserRegisterResponse(userEmail, userRepeatNewPassword, "");
 
                 LoginAndRegisterRetrofitInterface service = retrofit.create(LoginAndRegisterRetrofitInterface.class);
 
@@ -172,12 +165,10 @@ public class RegisterActivity extends AppCompatActivity {
                     public void onResponse(Call<UserRegisterResponse> call, Response<UserRegisterResponse> response) {
 
 
-                        if(response.body().getResponse().equals("User with such email already exists"))
-                        {
+                        if (response.body().getResponse().equals("User with such email already exists")) {
                             registerEmailInputEditText.setError(response.body().getResponse());
                             registerEmailInputLayout.setErrorContentDescription(response.body().getResponse());
-                        } else
-                        {
+                        } else {
 
                             loginIntent.putExtra("email", response.body().getUserEmail());
                             startActivity(loginIntent);
@@ -188,61 +179,47 @@ public class RegisterActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(Call<UserRegisterResponse> call, Throwable t) {
-                                System.out.println("CIA KAZKAS NEGERAI" + t);
+                        System.out.println("CIA KAZKAS NEGERAI" + t);
                     }
                 });
-
 
 
             }
         });
     }
 
-    public Boolean checkInputFields()
-    {
+    public Boolean checkInputFields() {
         boolean validInput = true;
 
 
-        if((registerEmailInputEditText.getText().toString().isEmpty())||(registerNewPasswordInputEditText.getText().toString().isEmpty())||(registerRepeatNewPasswordInputEditText.getText().toString().isEmpty()))
-        {
-            if((registerEmailInputEditText.getText().toString().isEmpty()))
-            {
+        if ((registerEmailInputEditText.getText().toString().isEmpty()) || (registerNewPasswordInputEditText.getText().toString().isEmpty()) || (registerRepeatNewPasswordInputEditText.getText().toString().isEmpty())) {
+            if ((registerEmailInputEditText.getText().toString().isEmpty())) {
                 registerEmailInputEditText.setError("Cannot be empty");
                 registerEmailInputLayout.setErrorContentDescription("Cannot be empty");
                 validInput = false;
             }
-            if ((registerNewPasswordInputEditText.getText().toString().isEmpty()))
-        {
-            registerNewPasswordInputLayout.setPasswordVisibilityToggleEnabled(false);
-            registerNewPasswordInputEditText.setError("Cannot be empty");
-            registerNewPasswordInputLayout.setErrorContentDescription("Cannot be empty");
-            validInput = false;
+            if ((registerNewPasswordInputEditText.getText().toString().isEmpty())) {
+                registerNewPasswordInputLayout.setPasswordVisibilityToggleEnabled(false);
+                registerNewPasswordInputEditText.setError("Cannot be empty");
+                registerNewPasswordInputLayout.setErrorContentDescription("Cannot be empty");
+                validInput = false;
+            }
+            if (registerRepeatNewPasswordInputEditText.getText().toString().isEmpty()) {
+                registerRepeatNewPasswordInputLayout.setPasswordVisibilityToggleEnabled(false);
+                registerRepeatNewPasswordInputEditText.setError("Incorrect email");
+                registerRepeatNewPasswordInputLayout.setErrorContentDescription("Email is invalid");
+                validInput = false;
+            }
         }
-            if (registerRepeatNewPasswordInputEditText.getText().toString().isEmpty())
-        {
-            registerRepeatNewPasswordInputLayout.setPasswordVisibilityToggleEnabled(false);
-            registerRepeatNewPasswordInputEditText.setError("Incorrect email");
-            registerRepeatNewPasswordInputLayout.setErrorContentDescription("Email is invalid");
-            validInput = false;
-        }
-        }
-        if(!(registerNewPasswordInputEditText.getText().toString().equals(registerRepeatNewPasswordInputEditText.getText().toString())))
-        {
+        if (!(registerNewPasswordInputEditText.getText().toString().equals(registerRepeatNewPasswordInputEditText.getText().toString()))) {
             registerRepeatNewPasswordInputEditText.setError("Passwords are not matching");
             registerRepeatNewPasswordInputLayout.setErrorContentDescription("Passwords are not matching");
             registerRepeatNewPasswordInputLayout.setErrorEnabled(true);
             registerRepeatNewPasswordInputLayout.setPasswordVisibilityToggleEnabled(false);
-            validInput=false;
+            validInput = false;
         }
         return validInput;
     }
-
-    public static boolean isValidEmail(CharSequence target) {
-        return (!TextUtils.isEmpty(target) && Patterns.EMAIL_ADDRESS.matcher(target).matches());
-    }
-
-
-
 
 
 }

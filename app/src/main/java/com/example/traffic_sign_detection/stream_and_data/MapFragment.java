@@ -4,7 +4,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -20,29 +19,20 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
 import com.example.traffic_sign_detection.R;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
@@ -71,68 +61,280 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class MapFragment extends Fragment implements OnMapReadyCallback {
 
 
-    View root;
-
-    MapView mapView;
-    GoogleMap mGoogleMap;
+    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     SupportMapFragment mapFrag;
-    LocationRequest mLocationRequest;
-    Location mLastLocation;
-    Marker mCurrLocationMarker;
-    FusedLocationProviderClient mFusedLocationClient;
+    private LocationRequest mLocationRequest;
+    private Location mLastLocation;
+    private Marker mCurrLocationMarker;
+    private FusedLocationProviderClient mFusedLocationClient;
+    String temp = "";
 
-    String temp="";
+    private Disposable disposable;
+    private Disposable disposable2;
 
-    Disposable disposable;
+    private RetrofitStreamService service;
+    private RetrofitStreamService service2;
 
-    RetrofitStreamService service;
 
-    ArrayList<MarkerModel> markers = new ArrayList<MarkerModel>();
-    ArrayList<String> predictionNames = new ArrayList<>();
-    ArrayList<Float> predictionProbabilities = new ArrayList<>();
+    private ArrayList<String> predictionNames = new ArrayList<>();
+    private ArrayList<Float> predictionProbabilities = new ArrayList<>();
 
-    Double longitude = 0.0;
-    Double latitude = 0.0;
+    private Double longitude = 0.0;
+    private Double latitude = 0.0;
 
-    String sign = "";
+    private Double gottenLongitude = 0.0;
+    private Double gottenLatitude = 0.0;
+
+    private ArrayList<Double> gottenLongitudes = new ArrayList<>();
+    private ArrayList<Double> gottenLatitudes = new ArrayList<>();
+
+    private String sign = "";
+    private ArrayList<String> gottenSign = new ArrayList<>();
+
+
+    private Integer count = 0;
+    private Integer gottenCount = 0;
+
+    private View root;
+
+    private GoogleMap mGoogleMap;
+
+    private Integer methodCalls = 0;
+    private Integer gottenMethodCalls = 0;
+
+    private Integer gpsAccOrNot = 0;
+    private Integer iteration = 0;
+
+    private ArrayList<MarkerModel> markers = new ArrayList<MarkerModel>();
+
+    LocationCallback mLocationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            List<Location> locationList = locationResult.getLocations();
+            if (locationList.size() > 0) {
+                //The last location in the list is the newest
+                Location location = locationList.get(locationList.size() - 1);
+                Log.i("MapsActivity", "Location: " + location.getLatitude() + " " + location.getLongitude());
+                mLastLocation = location;
+                if (mCurrLocationMarker != null) {
+                    mCurrLocationMarker.remove();
+                }
+
+                if(gpsAccOrNot==1)
+                {
+
+                    switch (sign) {
+                        case "bus_stop":
+                            markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_bus_stop));
+                            break;
+                        case "cannot_park":
+                            markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_no_thc));
+                            break;
+                        case "cannot_stop":
+                            markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_cannot_park));
+                            break;
+                        case "road_work":
+                            markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_road_work));
+                            break;
+                        case "speed_70":
+                            markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_speed_limit_70_roadsign));
+                            break;
+                        case "stop_signs":
+                            markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_stop_sign));
+                            break;
+                        case "crosswalk":
+                            markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_crosswalk));
+                            break;
+                        case "parking_spot":
+                            markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_parking));
+                            break;
+                        case "main_road":
+                            markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_main_road));
+                            break;
+                        case "tmp":
+                            markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_marker));
+                            break;
+
+                    }
+
+
+                    latitude = location.getLatitude();
+                    longitude = location.getLongitude();
+
+                    for (int i = 0; i < markers.size(); i++) {
+
+                        createMarker(markers.get(i).getLattitude(), markers.get(i).getLongitude(), markers.get(i).getTitle(), markers.get(i).getDrawable());
+
+                    }
+
+                    if (count == 0) {
+                        CameraPosition cameraPosition = new CameraPosition.Builder()
+                                .target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(15).build();
+                        mGoogleMap.animateCamera(CameraUpdateFactory
+                                .newCameraPosition(cameraPosition));
+                    }
+
+                    count++;
+                    methodCalls=1;
+
+                } else if(gpsAccOrNot==0)
+                {
+
+                    for(int i=0; i<gottenLongitudes.size() ; i++)
+                    {
+                        switch (gottenSign.get(i)) {
+                            case "bus_stop":
+                                markers.add(new MarkerModel(gottenLatitudes.get(i), gottenLongitudes.get(i), "Current position", R.drawable.ic_bus_stop));
+                                break;
+                            case "cannot_park":
+                                markers.add(new MarkerModel(gottenLatitudes.get(i), gottenLongitudes.get(i), "Current position", R.drawable.ic_no_thc));
+                                break;
+                            case "cannot_stop":
+                                markers.add(new MarkerModel(gottenLatitudes.get(i), gottenLongitudes.get(i), "Current position", R.drawable.ic_cannot_park));
+                                break;
+                            case "road_work":
+                                markers.add(new MarkerModel(gottenLatitudes.get(i), gottenLongitudes.get(i), "Current position", R.drawable.ic_road_work));
+                                break;
+                            case "speed_70":
+                                markers.add(new MarkerModel(gottenLatitudes.get(i), gottenLongitudes.get(i), "Current position", R.drawable.ic_speed_limit_70_roadsign));
+                                break;
+                            case "stop_signs":
+                                markers.add(new MarkerModel(gottenLatitudes.get(i), gottenLongitudes.get(i), "Current position", R.drawable.ic_stop_sign));
+                                break;
+                            case "crosswalk":
+                                markers.add(new MarkerModel(gottenLatitudes.get(i), gottenLongitudes.get(i), "Current position", R.drawable.ic_crosswalk));
+                                break;
+                            case "parking_spot":
+                                markers.add(new MarkerModel(gottenLatitudes.get(i), gottenLongitudes.get(i), "Current position", R.drawable.ic_parking));
+                                break;
+                            case "main_road":
+                                markers.add(new MarkerModel(gottenLatitudes.get(i), gottenLongitudes.get(i), "Current position", R.drawable.ic_main_road));
+                                break;
+                            case "tmp":
+                                markers.add(new MarkerModel(gottenLatitudes.get(i), gottenLongitudes.get(i), "Current position", R.drawable.ic_marker));
+                                break;
+                        }
+                    }
+
+
+
+//                    System.out.println("O CIA KA GAVAU : " + gottenLongitudes.get(0));
+//
+//                    for(int i=0; i<gottenLongitudes.size(); i++)
+//                    {
+//                        markers.add(new MarkerModel(gottenLatitudes.get(i), gottenLongitudes.get(i), "Current position", R.drawable.ic_marker));
+//                    }
+
+                    for (int i = 0; i < markers.size(); i++) {
+
+                        createMarker(markers.get(i).getLattitude(), markers.get(i).getLongitude(), markers.get(i).getTitle(), markers.get(i).getDrawable());
+
+                    }
+
+                    if (gottenCount == 0) {
+                        CameraPosition cameraPosition = new CameraPosition.Builder()
+                                .target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(15).build();
+                        mGoogleMap.animateCamera(CameraUpdateFactory
+                                .newCameraPosition(cameraPosition));
+                    }
+
+                    gottenCount++;
+                    gottenMethodCalls =1;
+
+                }
+            }
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         root = inflater.inflate(R.layout.fragment_map, container, false);
         setRetainInstance(true);
         System.out.println("Aleliuja ");
+        String user_email = getActivity().getIntent().getStringExtra("user_email");
+        System.out.println("ZAZ" + user_email);
 
-        mLocationRequest = new LocationRequest();
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(100);
-        mLocationRequest.setFastestInterval(100);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(root.getContext());
 
-        mapView = root.findViewById(R.id.map);
-        mapView.onCreate(savedInstanceState);
-        mapView.onResume();
-        mapView.getMapAsync(this);
 
-        predictionNames.add("tmp");
-        predictionProbabilities.add((float) 1.1);
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://78.56.203.39:8070")
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .build();
+        if(user_email.equals("gps@gps.lt"))
+        {
+            gpsAccOrNot=1;
 
-        service = retrofit.create(RetrofitStreamService.class);
+            mLocationRequest = new LocationRequest();
+            mLocationRequest = new LocationRequest();
+            mLocationRequest.setInterval(100);
+            mLocationRequest.setFastestInterval(100);
+            mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
-        disposable = Observable.interval(0, 1000, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::getLastPredictionData, this::onError);
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(root.getContext());
+
+            MapView mapView = root.findViewById(R.id.map);
+            mapView.onCreate(savedInstanceState);
+            mapView.onResume();
+            mapView.getMapAsync(this);
+
+            predictionNames.add("tmp");
+            predictionProbabilities.add((float) 1.1);
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl("http://78.56.203.39:8070")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                    .build();
+
+            service = retrofit.create(RetrofitStreamService.class);
+
+            disposable = Observable.interval(0, 1000, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(this::getLastPredictionData, this::onError);
+        } else
+        {
+            gpsAccOrNot=0;
+
+            mLocationRequest = new LocationRequest();
+            mLocationRequest = new LocationRequest();
+            mLocationRequest.setInterval(100);
+            mLocationRequest.setFastestInterval(100);
+            mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(root.getContext());
+
+            MapView mapView = root.findViewById(R.id.map);
+            mapView.onCreate(savedInstanceState);
+            mapView.onResume();
+            mapView.getMapAsync(this);
+
+
+            predictionNames.add("tmp");
+            predictionProbabilities.add((float) 1.1);
+
+            gottenSign.add("tmp");
+            gottenLatitudes.add(gottenLongitude);
+            gottenLongitudes.add(gottenLatitude);
+
+
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl("http://78.56.203.39:8070")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                    .build();
+
+            service2 = retrofit.create(RetrofitStreamService.class);
+
+            disposable2 = Observable.interval(0, 1000, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(this::getLastLocation, this::onErrorLocation);
+
+        }
+
+
 
         return root;
     }
-
 
     @Override
     public void onPause() {
@@ -165,82 +367,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 //Request Location Permission
                 checkLocationPermission();
             }
-        }
-        else {
+        } else {
             mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
             mGoogleMap.setMyLocationEnabled(true);
         }
     }
 
-    LocationCallback mLocationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            List<Location> locationList = locationResult.getLocations();
-            if (locationList.size() > 0) {
-                //The last location in the list is the newest
-                Location location = locationList.get(locationList.size() - 1);
-                Log.i("MapsActivity", "Location: " + location.getLatitude() + " " + location.getLongitude());
-                mLastLocation = location;
-                if (mCurrLocationMarker != null) {
-                    mCurrLocationMarker.remove();
-                }
-
-                switch (sign) {
-                    case "bus_stop":
-                        markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_bus_stop));
-                        break;
-                    case "cannot_park":
-                        markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_no_thc));
-                        break;
-                    case "cannot_stop":
-                        markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_cannot_park));
-                        break;
-                    case "road_work":
-                        markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_road_work));
-                        break;
-                    case "speed_70":
-                        markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_speed_limit_70_roadsign));
-                        break;
-                    case "stop_signs":
-                        markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_stop_sign));
-                        break;
-                    case "crosswalk":
-                        markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_crosswalk));
-                        break;
-                    case "parking_spot":
-                        markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_parking));
-                        break;
-                    case "main_road":
-                        markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_main_road));
-                        break;
-//                    case "tmp":
-//                        markers.add(new MarkerModel(location.getLatitude(), location.getLongitude(), "Current position", R.drawable.ic_marker));
-//                        break;
-                }
-
-
-                latitude = location.getLatitude();
-                longitude = location.getLongitude();
-
-                for(int i = 0 ; i < markers.size() ; i++) {
-
-                        createMarker(markers.get(i).getLattitude(), markers.get(i).getLongitude(), markers.get(i).getTitle(), markers.get(i).getDrawable());
-
-                }
-
-
-
-                    CameraPosition cameraPosition = new CameraPosition.Builder()
-                            .target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(15).build();
-                    mGoogleMap.animateCamera(CameraUpdateFactory
-                            .newCameraPosition(cameraPosition));
-
-
-            }
-        }
-    };
-
-    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     private void checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -261,7 +393,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                                 //Prompt the user once explanation has been shown
                                 ActivityCompat.requestPermissions(getActivity(),
                                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                        MY_PERMISSIONS_REQUEST_LOCATION );
+                                        MY_PERMISSIONS_REQUEST_LOCATION);
                             }
                         })
                         .create()
@@ -272,14 +404,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(getActivity(),
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION );
+                        MY_PERMISSIONS_REQUEST_LOCATION);
             }
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+                                           String[] permissions, int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_LOCATION: {
                 // If request is cancelled, the result arrays are empty.
@@ -312,7 +444,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
 
     @SuppressLint("CheckResult")
-    public void getLastPredictionData(Long aLong){
+    public void getLastPredictionData(Long aLong) {
+
+
+        if(predictionNames.get(0).equals("tmp") && methodCalls !=1)
+        {
+            sign = "tmp";
+            System.out.println("DYDIS : " + predictionNames.size());
+            onMapReady(mGoogleMap);
+        }
+
         Observable<PredictionModel> observable = service.getLastPredictionData();
         observable.subscribeOn(Schedulers.newThread()).
                 observeOn(AndroidSchedulers.mainThread())
@@ -325,36 +466,37 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 Toast.LENGTH_LONG).show();
     }
 
+
     private void handleResults(PredictionModel url) {
+
 
         if (url != null) {
 
             url.getPredictionClassName();
             url.getPredictionProbability();
-            url.getTimestamp().substring(0,19).replace("T", " ");
+            url.getTimestamp().substring(0, 19).replace("T", " ");
 
 
-            System.out.println("VZG" + predictionNames);
+            if ((predictionNames.get(predictionNames.size() - 1).equals(url.getPredictionClassName()))) {
 
-            System.out.println("KA AS CIA GAVAU" + url.getPredictionClassName());
+                System.out.println("SUTAMPA");
+            } else {
 
-            if((predictionNames.get(predictionNames.size()-1).equals(url.getPredictionClassName()))) {
-                System.out.println("SUTAMPA" );
-            } else
-            {
-                System.out.println("NESUTAMPA" );
+                System.out.println("NESUTAMPA");
                 predictionNames.add(url.getPredictionClassName());
                 predictionProbabilities.add(Float.valueOf(url.getPredictionProbability()));
-                sign=url.getPredictionClassName();
+                sign = url.getPredictionClassName();
 
                 System.out.println("VA DABAR");
+
                 onMapReady(mGoogleMap);
+
                 Retrofit retrofit = new Retrofit.Builder()
                         .baseUrl("http://78.56.203.39:8070")
                         .addConverterFactory(GsonConverterFactory.create())
                         .build();
 
-                PredictionLocationModel predictionLocationModel = new PredictionLocationModel(latitude,longitude);
+                PredictionLocationModel predictionLocationModel = new PredictionLocationModel(longitude, latitude, url.getPredictionClassName(), url.getPredictionProbability());
 
                 RetrofitInterface service = retrofit.create(RetrofitInterface.class);
 
@@ -365,11 +507,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                     @Override
                     public void onResponse(Call<PredictionLocationModel> call, Response<PredictionLocationModel> response) {
 
-                        if(response.body()==null)
-                        {
+                        if (response.body() == null) {
                             System.out.println("OPA1");
-                        } else
-                        {
+                        } else {
                             System.out.println("OPA2");
                         }
 
@@ -389,32 +529,115 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         } else {
             Toast.makeText(root.getContext(), "NO RESULTS FOUND",
                     Toast.LENGTH_LONG).show();
+
+            System.out.println("NO RESULTS FOUND");
         }
+
+
     }
 
     private void handleError(Throwable t) {
         //Add your error here.
     }
 
-    protected Marker createMarker(double latitude, double longitude, String title, @DrawableRes int vectorDrawableResourceId ) {
 
-        return mGoogleMap.addMarker(new MarkerOptions()
+
+
+    // ------------ VA NUO CIA -------------------------
+
+    @SuppressLint("CheckResult")
+    public void getLastLocation(Long aLong) {
+
+        Observable<List<PredictionLocationModel>> observable = service2.getPredictionLocations();
+        observable.subscribeOn(Schedulers.newThread()).
+                observeOn(AndroidSchedulers.mainThread())
+                .map(result -> result)
+                .subscribe(this::handleResultsLocation, this::handleErrorLocation);
+    }
+
+    private void onErrorLocation(Throwable throwable) {
+        Toast.makeText(root.getContext(), "OnError in Observable Timer",
+                Toast.LENGTH_LONG).show();
+    }
+
+
+    private void handleResultsLocation(List<PredictionLocationModel> url) {
+
+        if (url != null) {
+
+
+
+            gottenLongitude = url.get(url.size()-1).getLng();
+            gottenLatitude = url.get(url.size()-1).getLat();
+
+
+             if((gottenLatitudes.get(gottenLatitudes.size() - 1).equals(url.get(url.size()-1).getLat())) && (gottenLongitudes.get(gottenLongitudes.size() - 1).equals(url.get(url.size()-1).getLng())))
+             {
+                 System.out.println("SUTAMPA KOORDINATES");
+             } else
+             {
+                 System.out.println("NESUTAMPA KOORDINATES");
+
+                 System.out.println("KA GAVAU" + gottenLongitude);
+
+                 gottenLatitudes.add(gottenLatitude);
+                 gottenLongitudes.add(gottenLongitude);
+
+                 gottenSign.add(url.get(url.size() - 1).getPredictionClassName());
+
+                 onMapReady(mGoogleMap);
+
+             }
+
+        } else {
+            Toast.makeText(root.getContext(), "NO RESULTS FOUND",
+                    Toast.LENGTH_LONG).show();
+
+            System.out.println("NO RESULTS FOUND");
+        }
+
+
+    }
+
+    private void handleErrorLocation(Throwable t) {
+        //Add your error here.
+        System.out.println("ERRORAS" + t.toString());
+
+    }
+
+
+    protected Marker createMarker(double latitude, double longitude, String title, @DrawableRes int vectorDrawableResourceId) {
+
+        MarkerOptions a = new MarkerOptions()
                 .position(new LatLng(latitude, longitude))
                 .anchor(0.5f, 0.5f)
                 .title(title)
-                .icon(bitmapDescriptorFromVector(root.getContext(), vectorDrawableResourceId)));
+                .icon(bitmapDescriptorFromVector(root.getContext(), vectorDrawableResourceId));
+
+        Marker m = mGoogleMap.addMarker(a);
+
+        m.setPosition(new LatLng(latitude, longitude));
+
+//        return mGoogleMap.addMarker(new MarkerOptions()
+//                .position(new LatLng(latitude, longitude))
+//                .anchor(0.5f, 0.5f)
+//                .title(title)
+//                .icon(bitmapDescriptorFromVector(root.getContext(), vectorDrawableResourceId)));
+
+        return m;
     }
 
     private BitmapDescriptor bitmapDescriptorFromVector(Context context, @DrawableRes int vectorDrawableResourceId) {
         Drawable background = ContextCompat.getDrawable(context, vectorDrawableResourceId);
-        background.setBounds(0, 0, 65, 65);
-        Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorDrawableResourceId);
-        vectorDrawable.setBounds(40, 20, 65, 65);
-        Bitmap bitmap = Bitmap.createBitmap(65, 65, Bitmap.Config.ARGB_8888);
+        background.setBounds(0, 0, 80, 80);
+//        Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorDrawableResourceId);
+//        vectorDrawable.setBounds(40, 20, 65, 65);
+        Bitmap bitmap = Bitmap.createBitmap(80, 80, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         background.draw(canvas);
-        vectorDrawable.draw(canvas);
+//        vectorDrawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
+
 
 }

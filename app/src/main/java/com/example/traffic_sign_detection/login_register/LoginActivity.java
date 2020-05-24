@@ -1,22 +1,22 @@
 package com.example.traffic_sign_detection.login_register;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Patterns;
-import android.view.View;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.traffic_sign_detection.R;
 import com.example.traffic_sign_detection.stream_and_data.StreamAndDataActivity;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-
-import org.json.JSONObject;
 
 import lombok.SneakyThrows;
 import retrofit2.Call;
@@ -35,8 +35,12 @@ public class LoginActivity extends AppCompatActivity {
 
     private MaterialButton loginMaterialButton;
 
-    private Intent streamAndDataIntent;
+//    private Intent streamAndDataIntent;
     private Boolean checkYoSelf = false;
+
+    public static boolean isValidEmail(CharSequence target) {
+        return (!TextUtils.isEmpty(target) && Patterns.EMAIL_ADDRESS.matcher(target).matches());
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +48,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         initViews();
-        if(!(getIntent().getExtras() == null))
-        {
+        if (!(getIntent().getExtras() == null)) {
             String value = getIntent().getExtras().getString("email");
             loginEmailInputEditText.setText(value);
             login();
@@ -104,8 +107,7 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    public void initViews()
-    {
+    public void initViews() {
         loginEmailInputLayout = findViewById(R.id.login_email_layout);
         loginPasswordInputLayout = findViewById(R.id.login_password_layout);
 
@@ -114,11 +116,10 @@ public class LoginActivity extends AppCompatActivity {
 
         loginMaterialButton = findViewById(R.id.login_login);
 
-        streamAndDataIntent = new Intent(this, StreamAndDataActivity.class);
+//        streamAndDataIntent = new Intent(this, StreamAndDataActivity.class);
     }
 
-    public void login()
-    {
+    public void login() {
         loginMaterialButton.setOnClickListener(v -> {
 
 
@@ -143,17 +144,21 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<UserModelLogin> call, Response<UserModelLogin> response) {
 
-                        if(response.body()==null)
-                        {
+                        if (response.body() == null) {
                             loginEmailInputEditText.setError("User does not exist");
                             loginEmailInputLayout.setErrorContentDescription("User does not exist");
-                            loginPasswordInputEditText.setError("User does not exist");
-                            loginPasswordInputLayout.setErrorContentDescription("User does not exist");
+//                            loginPasswordInputEditText.setError("User does not exist");
+//                            loginPasswordInputLayout.setErrorContentDescription("User does not exist");
                             loginPasswordInputLayout.setPasswordVisibilityToggleEnabled(false);
 
                         }
 
                         if (!(response.body() == null)) {
+
+                            Intent streamAndDataIntent = new Intent(getBaseContext(), StreamAndDataActivity.class);
+                            streamAndDataIntent.putExtra("user_email", userEmail);
+
+
                             startActivity(streamAndDataIntent);
                         }
                     }
@@ -167,35 +172,28 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    public Boolean checkInputFields()
-    {
+    public Boolean checkInputFields() {
         Boolean validInput = true;
 
 
-        if((loginEmailInputEditText.getText().toString().isEmpty())||(loginPasswordInputEditText.getText().toString().isEmpty()))
-        {
-            if((loginEmailInputEditText.getText().toString().isEmpty()))
-            {
+        if ((loginEmailInputEditText.getText().toString().isEmpty()) || (loginPasswordInputEditText.getText().toString().isEmpty())) {
+            if ((loginEmailInputEditText.getText().toString().isEmpty())) {
                 loginEmailInputEditText.setError("Cannot be empty");
                 loginEmailInputLayout.setErrorContentDescription("Cannot be empty");
                 validInput = false;
-            } if ((loginPasswordInputEditText.getText().toString().isEmpty()))
-            {
+            }
+            if ((loginPasswordInputEditText.getText().toString().isEmpty())) {
                 loginPasswordInputLayout.setPasswordVisibilityToggleEnabled(false);
                 loginPasswordInputEditText.setError("Cannot be empty");
                 loginPasswordInputLayout.setErrorContentDescription("Cannot be empty");
                 validInput = false;
-            } if ((isValidEmail(loginEmailInputEditText.getText().toString())))
-            {
+            }
+            if ((isValidEmail(loginEmailInputEditText.getText().toString()))) {
                 loginEmailInputEditText.setError("Incorrect email");
                 loginEmailInputLayout.setErrorContentDescription("Email is invalid");
                 validInput = false;
             }
         }
         return validInput;
-    }
-
-    public static boolean isValidEmail(CharSequence target) {
-        return (!TextUtils.isEmpty(target) && Patterns.EMAIL_ADDRESS.matcher(target).matches());
     }
 }

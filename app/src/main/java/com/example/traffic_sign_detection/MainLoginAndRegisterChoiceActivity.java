@@ -1,9 +1,9 @@
 package com.example.traffic_sign_detection;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.traffic_sign_detection.login_register.LoginActivity;
 import com.example.traffic_sign_detection.login_register.RegisterActivity;
@@ -27,8 +27,7 @@ public class MainLoginAndRegisterChoiceActivity extends AppCompatActivity {
 
     }
 
-    private void initViews()
-    {
+    private void initViews() {
         loginButton = findViewById(R.id.login);
         registerButton = findViewById(R.id.register);
 
@@ -38,14 +37,12 @@ public class MainLoginAndRegisterChoiceActivity extends AppCompatActivity {
     }
 
 
-    private void login()
-    {
+    private void login() {
         loginButton.setOnClickListener(v -> startActivity(loginIntent));
     }
 
 
-    private void register()
-    {
+    private void register() {
         registerButton.setOnClickListener(v -> startActivity(registerIntent));
     }
 }

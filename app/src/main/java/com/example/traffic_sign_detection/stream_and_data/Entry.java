@@ -11,6 +11,6 @@ import lombok.Setter;
 public class Entry {
 
     private String predictionClassName;
-    private Float  predictionProbability;
+    private Float predictionProbability;
 
 }

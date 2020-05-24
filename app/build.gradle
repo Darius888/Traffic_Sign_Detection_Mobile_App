@@ -8,8 +8,8 @@ android {
         applicationId "traffic.sign.detection.traffic_sign_detection"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 2
-        versionName "1.1"
+        versionCode 3
+        versionName "1.2"
         multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

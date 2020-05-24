@@ -14,38 +14,44 @@ import lombok.Setter;
 @NoArgsConstructor
 public class PredictionLocationModel {
     Double lng;
-    Double ltd;
+    Double lat;
     Long timeMillis;
+    String predictionClassName;
+    String predictionProbability;
 
 
-    public Double getLng()
-    {
-        return lng;
-    }
-
-
-    public void setLng()
-    {
+    public PredictionLocationModel(Double lng, Double lat, String predictionClassName, String predictionProbability) {
         this.lng = lng;
-    }
-
-    public Double getltd()
-    {
-        return ltd;
-    }
-
-    public void setltd()
-    {
-        this.ltd = ltd;
-    }
-
-    public PredictionLocationModel(Double lng, Double ltd)
-    {
-        this.lng = lng;
-        this.ltd = ltd;
+        this.lat = lat;
+        this.predictionClassName = predictionClassName;
+        this.predictionProbability = predictionProbability;
         Date date = new Date();
         long timeMilli = date.getTime();
         this.timeMillis = timeMilli;
     }
+
+    public Double getLng() {
+        return lng;
+    }
+
+    public void setLng() {
+        this.lng = lng;
+    }
+
+    public Double getltd() {
+        return lat;
+    }
+
+    public void setltd() {
+        this.lat = lat;
+    }
+
+    public String getPredictionClassName() { return predictionClassName; }
+
+    public void setPredictionClassName() { this.predictionClassName = predictionClassName; }
+
+    public String getPredictionProbability() { return predictionProbability; }
+
+    public void setPredictionProbability() { this.predictionProbability = predictionProbability; }
 
 }
